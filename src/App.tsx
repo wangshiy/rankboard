@@ -1,26 +1,60 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import useAnimationFrame from "./utils/useAnimationFrame";
+import "./App.css";
+import Card from "./components/Card";
+import mockData from "./mockData.json";
 
-function App() {
+const getRandomInt = (min: number, max: number) => {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+};
+
+const formatData = (data: any) => {
+  const dataRankByScoreHighToLow = data
+    .slice()
+    .sort((a: any, b: any) => {
+      return b.score - a.score;
+    })
+    .map((e: any) => e.userID);
+  const result = data.map((e: any) => {
+    const newRank = dataRankByScoreHighToLow.indexOf(e.userID);
+    return {
+      ...e,
+      rank: newRank,
+    };
+  });
+  return result;
+};
+
+const App = () => {
+  const [count, setCount] = useState(0);
+  const [data, setData] = useState(formatData(mockData));
+
+  useAnimationFrame(() => {
+    const randomIdx = getRandomInt(0, data.length);
+    const newData = data.map((e: any, i: number) => {
+      if (i === randomIdx) {
+        return {
+          ...e,
+          score: e.score + getRandomInt(1, 500),
+        };
+      } else {
+        return {
+          ...e,
+        };
+      }
+    });
+    const formattedData = formatData(newData);
+    setData(formattedData);
+    setCount(count + 1);
+  }, true);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Card data={data} />
     </div>
   );
-}
+};
 
 export default App;
